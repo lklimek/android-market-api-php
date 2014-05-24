@@ -8,19 +8,37 @@ class MarketSession {
 	public $context = NULL;
 	public $authSubToken = "";
 
+	protected $versionName = "4.8.19";
+	protected $versionCode = "80280019";
+	protected $device = 'g2';
+	protected $sdk = 19;
+//			"User-Agent: Android-Finsky/3.7.13 (api=3,versionCode=8013013,sdk=15,device=crespo,hardware=herring,product=soju)",
+
+//	protected $versionName = "3.7.13";
+//	protected $versionCode = "8013013";
+//	protected $device = 'g2';
+//	protected $sdk = 19;
+
+	protected $userAgent; // set in constructor
 	/**
 	 *
 	 */
 	function __construct () {
 		$this->context = new RequestContext();
 		$this->context->setUnknown1(0);
-		$this->context->setVersion(8013013);
-		$this->context->setDeviceAndSdkVersion("crespo:15");
+		$this->context->setVersion($this->versionCode);//LK
+		$this->context->setDeviceAndSdkVersion($this->device . ":" . $this->sdk);
 
 		$this->context->setUserLanguage("en");
 		$this->context->setUserCountry("US");
 
 		$this->setOperatorTmobile();
+
+		$this->userAgent =
+			"Android-Finsky/" . $this->versionName . " (api=3,versionCode=" . $this->versionCode .
+			",sdk=" . $this->sdk .
+			",device=" . $this->device .
+			",hardware=g2,product=g2_open_ame)";
 	}
 
 	function setOperatorTmobile() {
@@ -94,7 +112,16 @@ class MarketSession {
 			//"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7",
 			
 			//New Headers - Old Ones Commented Out for Refernce
-			"User-Agent: Android-Finsky/3.7.13 (api=3,versionCode=8013013,sdk=15,device=crespo,hardware=herring,product=soju)",
+
+			// Note: user agent string is formatted with the following rule:
+			//format("Android-Finsky/%s (api=%d,versionCode=%d,sdk=%d,device=%s,hardware=%s,product=%s)",
+			//	p1, int(p3), int(p2), int(Landroid/os/Build$VERSION;->SDK_INT:I),
+			//	com/google/android/finsky/api/DfeApiContext;->sanitizeHeaderValue(Landroid/os/Build;->DEVICE)
+			// com/google/android/finsky/api/DfeApiContext;->sanitizeHeaderValue(Landroid/os/Build;->HARDWARE)
+			// com/google/android/finsky/api/DfeApiContext;->sanitizeHeaderValue(android/os/Build;->PRODUCT));
+
+//			"User-Agent: Android-Finsky/3.7.13 (api=3,versionCode=8013013,sdk=15,device=crespo,hardware=herring,product=soju)",
+			"User-Agent: " . $this->userAgent,
 			"Content-Type: application/x-www-form-urlencoded",
 			"Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7",
 		);
@@ -199,7 +226,7 @@ class MarketSession {
 		curl_setopt($ch, CURLOPT_POST, 1);
 		curl_setopt($ch, CURLOPT_COOKIE, "ANDROID=".$this->authSubToken);
 		//curl_setopt($ch, CURLOPT_USERAGENT, "Android-Market/2 (sapphire PLAT-RC33); gzip");
-		curl_setopt($ch, CURLOPT_USERAGENT, "Android-Finsky/3.7.13 (api=3,versionCode=8013013,sdk=15,device=crespo,hardware=herring,product=soju)");
+		curl_setopt($ch, CURLOPT_USERAGENT, $this->userAgent);
 		
 		$post = "version=2&request=".base64_encode($request);
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
